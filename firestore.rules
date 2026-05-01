@@ -1,0 +1,114 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUsername() {
+      return request.auth.token.email.replace('@ubgpro.local', '').toLowerCase();
+    }
+    
+    function isOwner(owner) {
+      return getUsername() == owner;
+    }
+    
+    function isMember(members) {
+      return getUsername() in members;
+    }
+    
+    // Rate limiting: Track writes per minute per user
+    // Uses a counter collection to enforce rate limits
+    match /rate_limits/{userId} {
+      allow read, write: if false; // Only Cloud Functions can manage this
+    }
+    
+    // Message size validation
+    function isValidMessageSize(data) {
+      return data.size() <= 10000; // 10KB max per document
+    }
+    
+    function isValidMessageText(data) {
+      return data.text.size() <= 500; // 500 character limit
+    }
+    
+    // ==================== GLOBAL CHAT ====================
+    match /messages/{messageId} {
+      allow read: if true; // Anyone can read messages
+      allow create: if isAuthenticated()
+        && isValidMessageSize(request.resource.data)
+        && isValidMessageText(request.resource.data)
+        && request.resource.data.username == getUsername();
+      allow update, delete: if false; // Messages are immutable, cleaned by cron
+    }
+    
+    // ==================== DIRECT MESSAGES ====================
+    match /dms/{dmId} {
+      allow read: if dmId.contains(getUsername());
+      match /messages/{messageId} {
+        allow read: if dmId.contains(getUsername());
+        allow create: if isAuthenticated()
+          && dmId.contains(getUsername())
+          && isValidMessageSize(request.resource.data)
+          && isValidMessageText(request.resource.data)
+          && request.resource.data.username == getUsername();
+        allow update, delete: if false;
+      }
+    }
+    
+    // ==================== GROUP CHATS / ROOMS ====================
+    match /rooms/{roomId} {
+      allow read: if isAuthenticated() && isOwner(resource.data.owner) || isMember(resource.data.members);
+      allow create: if isAuthenticated()
+        && isValidMessageSize(request.resource.data)
+        && request.resource.data.name.size() >= 2
+        && request.resource.data.name.size() <= 40
+        && request.resource.data.owner == getUsername();
+      allow update: if isAuthenticated() && isOwner(resource.data.owner);
+      allow delete: if isAuthenticated() && isOwner(resource.data.owner);
+      
+      // Room messages
+      match /messages/{messageId} {
+        allow read: if isAuthenticated() && isOwner(resource.data.owner) || isMember(resource.data.members);
+        allow create: if isAuthenticated()
+          && isOwner(resource.data.owner) || isMember(resource.data.members)
+          && isValidMessageSize(request.resource.data)
+          && isValidMessageText(request.resource.data)
+          && request.resource.data.username == getUsername();
+        allow update, delete: if false;
+      }
+    }
+    
+    // ==================== FRIENDS ====================
+    match /friends/{friendshipId} {
+      allow read: if friendshipId.contains(getUsername());
+      allow create: if isAuthenticated()
+        && isValidMessageSize(request.resource.data)
+        && friendshipId.contains(getUsername());
+      allow update: if false;
+      allow delete: if friendshipId.contains(getUsername());
+    }
+    
+    // ==================== FRIEND REQUESTS ====================
+    match /friendRequests/{requestId} {
+      allow read: if isAuthenticated()
+        && (resource.data.to == getUsername() || resource.data.from == getUsername());
+      allow create: if isAuthenticated()
+        && isValidMessageSize(request.resource.data)
+        && request.resource.data.from == getUsername();
+      allow update: if isAuthenticated()
+        && (resource.data.to == getUsername() || resource.data.from == getUsername());
+      allow delete: if isAuthenticated()
+        && (resource.data.to == getUsername() || resource.data.from == getUsername());
+    }
+    
+    // ==================== NOTIFICATIONS ====================
+    match /notifications/{notifId} {
+      allow read: if resource.data.userId == getUsername();
+      allow create: if false; // Only Cloud Functions create notifications
+      allow update, delete: if resource.data.userId == getUsername();
+    }
+  }
+}

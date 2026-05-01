@@ -156,7 +156,15 @@ document.addEventListener("DOMContentLoaded", () => {
           const canvas = document.createElement("canvas");
           canvas.width = w; canvas.height = h;
           canvas.getContext("2d").drawImage(img, 0, 0, w, h);
-          resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
+          // Convert to blob for Firebase Storage upload
+          canvas.toBlob((blob) => {
+            if (!blob) {
+              // Fallback to Base64 if blob conversion fails (offline mode)
+              resolve(canvas.toDataURL("image/jpeg", IMAGE_QUALITY));
+            } else {
+              resolve(blob);
+            }
+          }, "image/jpeg", IMAGE_QUALITY);
         };
         img.onerror = () => reject(new Error("Couldn't read that image"));
         img.src = reader.result;
@@ -164,6 +172,31 @@ document.addEventListener("DOMContentLoaded", () => {
       reader.onerror = () => reject(new Error("Couldn't read that file"));
       reader.readAsDataURL(file);
     });
+  }
+
+  // Upload image to Firebase Storage with offline fallback
+  async function uploadImageToStorage(blob, username) {
+    try {
+      if (typeof storage === 'undefined') {
+        throw new Error('Storage not available');
+      }
+      
+      const filename = `${Date.now()}_${Math.random().toString(36).substr(2, 9)}.jpg`;
+      const storageRef = storage.ref();
+      const imageRef = storageRef.child(`chat-images/${username}/${filename}`);
+      
+      await imageRef.put(blob);
+      const downloadUrl = await imageRef.getDownloadURL();
+      return downloadUrl;
+    } catch (err) {
+      // Fallback to Base64 if Storage fails (offline mode)
+      console.warn('Storage upload failed, falling back to Base64:', err);
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result);
+        reader.readAsDataURL(blob);
+      });
+    }
   }
 
   function buildMessageBody(msg) {
@@ -491,10 +524,11 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!me) return;
       if (!checkAntispam("[image]")) return;
       try {
-        const dataUrl = await compressImage(file);
+        const blob = await compressImage(file);
+        const imageUrl = await uploadImageToStorage(blob, me);
         const payload = {
           username: me,
-          image: dataUrl,
+          image: imageUrl,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
         if (chatReplyDraft) { payload.replyTo = chatReplyDraft; setReplyDraft("chat", null); }
@@ -846,11 +880,12 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!me || !currentDmFriend) return;
       if (!checkAntispam("[image]")) return;
       try {
-        const dataUrl = await compressImage(file);
+        const blob = await compressImage(file);
+        const imageUrl = await uploadImageToStorage(blob, me);
         const dmId = [me, currentDmFriend].sort().join("_");
         const payload = {
           username: me,
-          image: dataUrl,
+          image: imageUrl,
           timestamp: firebase.firestore.FieldValue.serverTimestamp()
         };
         if (dmReplyDraft) { payload.replyTo = dmReplyDraft; setReplyDraft("dm", null); }
@@ -1033,8 +1068,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
   }
 
+  // Use DOMPurify for better XSS protection with fallback
   function escapeHtml(unsafe) {
     if (!unsafe) return "";
+    if (typeof DOMPurify !== 'undefined' && DOMPurify.sanitize) {
+      // Use DOMPurify for rich content sanitization
+      return DOMPurify.sanitize(unsafe, {
+        ALLOWED_TAGS: [],
+        ALLOWED_ATTR: [],
+        ALLOW_DATA_ATTR: false
+      });
+    }
+    // Fallback to basic escaping
     return unsafe.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#039;");
   }
 

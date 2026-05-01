@@ -1,0 +1,41 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function getUsername() {
+      return request.auth.token.email.replace('@ubgpro.local', '').toLowerCase();
+    }
+    
+    // Image uploads for chat
+    match /chat-images/{userId}/{filename} {
+      // User can upload to their own folder
+      allow write: if isAuthenticated()
+        && userId == getUsername()
+        && request.resource.size < 5 * 1024 * 1024 // 5MB max
+        && request.resource.contentType.matches('image/.*'); // Only images
+      
+      // Anyone can read images
+      allow read: if true;
+    }
+    
+    // Profile pictures
+    match /profile-pics/{userId}/{filename} {
+      allow write: if isAuthenticated()
+        && userId == getUsername()
+        && request.resource.size < 2 * 1024 * 1024 // 2MB max
+        && request.resource.contentType.matches('image/.*');
+      
+      allow read: if true;
+    }
+    
+    // Deny all other paths
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
