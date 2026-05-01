@@ -70,7 +70,9 @@ function savePanicSettings(key, url) {
 function setupPanicKey() {
   document.addEventListener("keydown", (e) => {
     const settings = getPanicSettings();
-    if (e.altKey && e.key.toLowerCase() === settings.key) {
+    // Support both Alt + key and Escape as panic triggers
+    if ((e.altKey && e.key.toLowerCase() === settings.key) || e.key === "Escape") {
+      e.preventDefault();
       window.location.href = settings.url;
     }
   });
