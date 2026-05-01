@@ -246,9 +246,6 @@
             <h3 id="dmTitle">Messages</h3>
             <p id="dmDesc">Select a friend to start chatting</p>
           </div>
-          <div id="dmAddFriendTop" style="display:none; margin-top:10px;">
-            <button class="btn-primary btn-sm" id="addFriendBtnShortcut">Add Friend <i class="fas fa-user-plus"></i></button>
-          </div>
         </div>
         <div class="chat-messages" id="dmMessages">
           <div class="chat-welcome">
@@ -324,6 +321,8 @@
           </div>
           <div id="roomHeaderActions" class="room-header-actions" style="display:none;">
             <span id="roomCodeBadge" class="search-kbd room-code-badge" title="Click to copy this code"></span>
+            <button class="room-header-icon-btn" id="regenerateCodeBtn" title="Regenerate code" style="display:none;"><i class="fas fa-sync-alt"></i></button>
+            <button class="room-header-icon-btn" id="kickMemberBtn" title="Kick member" style="display:none;"><i class="fas fa-user-minus"></i></button>
             <button class="room-header-icon-btn" id="leaveRoomBtn" title="Leave group"><i class="fas fa-sign-out-alt"></i></button>
             <button class="room-header-icon-btn danger" id="deleteRoomBtn" title="Delete group" style="display:none;"><i class="fas fa-trash"></i></button>
           </div>
@@ -512,6 +511,19 @@
     <div class="modal-body">
       <p style="margin-bottom: 15px;">Select a friend to remove:</p>
       <div id="friendListRemove" class="channel-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="kickMemberModal">
+  <div class="auth-modal">
+    <div class="modal-header">
+      <h3>Kick Member</h3>
+      <button class="btn-icon" id="closeKickMemberModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 15px;">Select a member to kick:</p>
+      <div id="memberListKick" class="channel-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
     </div>
   </div>
 </div>

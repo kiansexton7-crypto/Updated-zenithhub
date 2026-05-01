@@ -49,6 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const globalChannelItem = document.querySelector('#channelList .channel-item[data-id="global"]');
   const roomHeaderActions = document.getElementById("roomHeaderActions");
   const roomCodeBadge = document.getElementById("roomCodeBadge");
+  const regenerateCodeBtn = document.getElementById("regenerateCodeBtn");
+  const kickMemberBtn = document.getElementById("kickMemberBtn");
   const leaveRoomBtn = document.getElementById("leaveRoomBtn");
   const deleteRoomBtn = document.getElementById("deleteRoomBtn");
 
@@ -415,7 +417,10 @@ document.addEventListener("DOMContentLoaded", () => {
       if (roomHeaderActions) roomHeaderActions.style.display = "flex";
       if (roomCodeBadge) roomCodeBadge.textContent = `Code: ${activeChannel.code}`;
       const me = getUsername();
-      if (deleteRoomBtn) deleteRoomBtn.style.display = (me && me === activeChannel.owner) ? "inline-flex" : "none";
+      const isOwner = me && me === activeChannel.owner;
+      if (deleteRoomBtn) deleteRoomBtn.style.display = isOwner ? "inline-flex" : "none";
+      if (regenerateCodeBtn) regenerateCodeBtn.style.display = isOwner ? "inline-flex" : "none";
+      if (kickMemberBtn) kickMemberBtn.style.display = isOwner ? "inline-flex" : "none";
     } else {
       activeChatTitle.innerHTML = `<i class="fas fa-globe"></i> Global Chat`;
       activeChatDesc.textContent = "Chat with other players on UBGPro in real-time!";
@@ -765,6 +770,105 @@ document.addEventListener("DOMContentLoaded", () => {
       showToast(`Code ${activeChannel.code} copied to clipboard`);
     }
   });
+  if (regenerateCodeBtn) regenerateCodeBtn.addEventListener("click", regenerateRoomCode);
+  if (kickMemberBtn) kickMemberBtn.addEventListener("click", showKickMemberModal);
+
+  // ============================================================
+  // ROOM MANAGEMENT FUNCTIONS
+  // ============================================================
+
+  async function regenerateRoomCode() {
+    const me = getUsername();
+    if (!me || activeChannel.type !== "room" || me !== activeChannel.owner) {
+      showToast("Only the owner can regenerate the code");
+      return;
+    }
+
+    try {
+      // Generate new unique code
+      let newCode = null;
+      for (let i = 0; i < 5; i++) {
+        const candidate = generateRoomCode();
+        const existing = await db.collection("rooms").where("code", "==", candidate).limit(1).get();
+        if (existing.empty) { newCode = candidate; break; }
+      }
+      if (!newCode) { showToast("Couldn't generate a new code, try again"); return; }
+
+      // Update room with new code
+      await db.collection("rooms").doc(activeChannel.id).update({ code: newCode });
+      activeChannel.code = newCode;
+      renderActiveChannelHeader();
+      showToast(`New code: ${newCode}`);
+    } catch (err) {
+      console.error("Regenerate code error:", err);
+      showToast("Failed to regenerate code");
+    }
+  }
+
+  function showKickMemberModal() {
+    const me = getUsername();
+    if (!me || activeChannel.type !== "room" || me !== activeChannel.owner) {
+      showToast("Only the owner can kick members");
+      return;
+    }
+
+    const kickMemberModal = document.getElementById("kickMemberModal");
+    const memberListKick = document.getElementById("memberListKick");
+    if (!kickMemberModal || !memberListKick) return;
+
+    memberListKick.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">Loading members...</p>';
+    kickMemberModal.classList.add("open");
+
+    // Load room members
+    db.collection("rooms").doc(activeChannel.id).get()
+      .then(doc => {
+        if (!doc.exists) return;
+        const data = doc.data();
+        const members = data.members || [];
+        const owner = data.owner;
+
+        memberListKick.innerHTML = "";
+        members.forEach(member => {
+          // Don't show owner in kick list
+          if (member.toLowerCase() === owner.toLowerCase()) return;
+
+          const el = document.createElement("div");
+          el.className = "channel-item";
+          el.innerHTML = `
+            <span><i class="fas fa-user"></i> ${escapeHtml(member)}</span>
+            <button class="btn-icon-small" style="color: #ef4444;" data-member="${member}" title="Kick"><i class="fas fa-trash"></i></button>
+          `;
+
+          el.querySelector("button").addEventListener("click", () => {
+            if (confirm(`Kick ${member} from the group?`)) {
+              db.collection("rooms").doc(activeChannel.id).update({
+                members: firebase.firestore.FieldValue.arrayRemove(member)
+              }).then(() => {
+                showToast(`Kicked ${member} from the group`);
+                el.remove();
+                // Update active channel members
+                if (activeChannel.members) {
+                  activeChannel.members = activeChannel.members.filter(m => m !== member);
+                }
+              }).catch(err => {
+                console.error("Kick error:", err);
+                showToast("Failed to kick member");
+              });
+            }
+          });
+
+          memberListKick.appendChild(el);
+        });
+
+        if (memberListKick.children.length === 0) {
+          memberListKick.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">No members to kick</p>';
+        }
+      })
+      .catch(err => {
+        console.error("Error loading members:", err);
+        memberListKick.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">Failed to load members</p>';
+      });
+  }
 
   // ============================================================
   // DM LOGIC
@@ -1072,10 +1176,19 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("addFriendBtnDms")) {
     document.getElementById("addFriendBtnDms").addEventListener("click", openFriendModalIfLoggedIn);
   }
-  if (document.getElementById("addFriendBtnShortcut")) {
-    document.getElementById("addFriendBtnShortcut").addEventListener("click", openFriendModalIfLoggedIn);
-  }
   if (closeFriendModal) closeFriendModal.addEventListener("click", () => friendModal.classList.remove("open"));
+  if (document.getElementById("closeKickMemberModal")) {
+    document.getElementById("closeKickMemberModal").addEventListener("click", () => {
+      document.getElementById("kickMemberModal").classList.remove("open");
+    });
+  }
+  if (document.getElementById("kickMemberModal")) {
+    document.getElementById("kickMemberModal").addEventListener("click", (e) => {
+      if (e.target.id === "kickMemberModal") {
+        e.target.classList.remove("open");
+      }
+    });
+  }
   if (document.getElementById("closeRemoveFriendModal")) {
     document.getElementById("closeRemoveFriendModal").addEventListener("click", () => {
       document.getElementById("removeFriendModal").classList.remove("open");
