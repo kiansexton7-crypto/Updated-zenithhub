@@ -21,7 +21,6 @@ function showPage(pageId) {
   // Lazy populate on navigate
   if (pageId === "games") renderAllGamesPage();
   if (pageId === "unity") renderUnityPage();
-  if (pageId === "anime") renderAnimePage();
   if (pageId === "movies") renderMoviesPage();
 }
 

@@ -1005,10 +1005,67 @@ document.addEventListener("DOMContentLoaded", () => {
     friendModal.classList.add("open");
   }
 
+  function showRemoveFriendModal() {
+    const me = getUsername();
+    if (!me) return;
+    
+    const removeFriendModal = document.getElementById("removeFriendModal");
+    const friendListRemove = document.getElementById("friendListRemove");
+    if (!removeFriendModal || !friendListRemove) return;
+    
+    friendListRemove.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">Loading friends...</p>';
+    removeFriendModal.classList.add("open");
+    
+    // Load friends
+    db.collection("friends").where("users", "array-contains", me).get()
+      .then(snapshot => {
+        friendListRemove.innerHTML = "";
+        if (snapshot.empty) {
+          friendListRemove.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">No friends to remove</p>';
+          return;
+        }
+        
+        snapshot.forEach(doc => {
+          const data = doc.data();
+          const friend = data.users.find(u => u.toLowerCase() !== me);
+          if (!friend) return;
+          
+          const el = document.createElement("div");
+          el.className = "channel-item";
+          el.innerHTML = `
+            <span><i class="fas fa-user"></i> ${escapeHtml(friend)}</span>
+            <button class="btn-icon-small" style="color: #ef4444;" data-friend="${friend}" title="Remove"><i class="fas fa-trash"></i></button>
+          `;
+          
+          el.querySelector("button").addEventListener("click", () => {
+            if (confirm(`Remove ${friend} as a friend?`)) {
+              doc.ref.delete().then(() => {
+                showToast(`Removed ${friend} as a friend`);
+                el.remove();
+                if (friendListRemove.children.length === 0) {
+                  friendListRemove.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">No friends to remove</p>';
+                }
+              });
+            }
+          });
+          
+          friendListRemove.appendChild(el);
+        });
+      })
+      .catch(err => {
+        console.error("Error loading friends:", err);
+        friendListRemove.innerHTML = '<p style="text-align:center; opacity:0.5; padding:20px;">Failed to load friends</p>';
+      });
+  }
+
   if (document.getElementById("topFriendsBtn")) {
     document.getElementById("topFriendsBtn").addEventListener("click", () => {
-      showPage('dms');
-      openFriendModalIfLoggedIn();
+      const me = getUsername();
+      if (!me) {
+        showToast("You must be logged in to manage friends");
+        return;
+      }
+      showRemoveFriendModal();
     });
   }
 
@@ -1019,6 +1076,18 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("addFriendBtnShortcut").addEventListener("click", openFriendModalIfLoggedIn);
   }
   if (closeFriendModal) closeFriendModal.addEventListener("click", () => friendModal.classList.remove("open"));
+  if (document.getElementById("closeRemoveFriendModal")) {
+    document.getElementById("closeRemoveFriendModal").addEventListener("click", () => {
+      document.getElementById("removeFriendModal").classList.remove("open");
+    });
+  }
+  if (document.getElementById("removeFriendModal")) {
+    document.getElementById("removeFriendModal").addEventListener("click", (e) => {
+      if (e.target.id === "removeFriendModal") {
+        e.target.classList.remove("open");
+      }
+    });
+  }
 
   if (sendFriendRequestBtn) {
     sendFriendRequestBtn.addEventListener("click", () => {

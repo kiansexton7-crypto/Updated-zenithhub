@@ -30,7 +30,6 @@
     <a href="#" class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>Home</span></a>
     <a href="#" class="nav-item" data-page="games"><i class="fas fa-gamepad"></i><span>All Games</span></a>
     <a href="#" class="nav-item" data-page="unity"><i class="fas fa-cube"></i><span>Unity Games</span></a>
-    <a href="#" class="nav-item" data-page="anime"><i class="fas fa-tv"></i><span>Anime</span></a>
     <a href="#" class="nav-item" data-page="movies"><i class="fas fa-film"></i><span>Movies & TV</span></a>
 
     <a href="#" class="nav-item" data-page="cloak"><i class="fas fa-user-secret"></i><span>Stealth Tab</span></a>
@@ -126,13 +125,6 @@
     <div class="section-header" style="margin-top:2rem"><h2>🎲 Unity WebGL Games</h2></div>
     <p class="page-desc">Full Unity WebGL games running directly in your browser.</p>
     <div class="game-grid" id="unityGrid"></div>
-  </div>
-
-  <!-- ANIME PAGE -->
-  <div class="page" id="page-anime">
-    <div class="section-header" style="margin-top:2rem"><h2><i class="fas fa-tv"></i> Anime</h2><span id="animeCount" class="game-count"></span></div>
-    <p class="page-desc">Click any title to start watching. Episodes, sub/dub, and alternate players are inside the player itself — no website navigation needed.</p>
-    <div class="game-grid" id="animeGrid"></div>
   </div>
 
   <!-- MOVIES & TV PAGE -->
@@ -511,6 +503,19 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="removeFriendModal">
+  <div class="auth-modal">
+    <div class="modal-header">
+      <h3>Remove Friend</h3>
+      <button class="btn-icon" id="closeRemoveFriendModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="margin-bottom: 15px;">Select a friend to remove:</p>
+      <div id="friendListRemove" class="channel-list" style="max-height: 300px; overflow-y: auto; margin-bottom: 15px;"></div>
+    </div>
+  </div>
+</div>
+
 <!-- TOAST -->
 <div class="toast" id="toast"></div>
 
@@ -519,7 +524,6 @@
 <script src="js/auth.js"></script>
 <script src="js/chat.js"></script>
 <script src="js/games.js"></script>
-<script src="js/anime.js"></script>
 <script src="js/movies.js"></script>
 
 <script src="js/cloak.js"></script>
