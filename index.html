@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UBG Pro</title>
+  <meta name="description" content="Play hundreds of unblocked games instantly. No downloads, no restrictions."/>
+  <link rel="stylesheet" href="css/style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  
+  <!-- Firebase Compat Scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <span class="logo-icon">⚡</span>
+    <span class="logo-text">UBG<span class="logo-accent">Pro</span></span>
+  </div>
+  <nav class="sidebar-nav">
+    <a href="#" class="nav-item active" data-page="home"><i class="fas fa-home"></i><span>Home</span></a>
+    <a href="#" class="nav-item" data-page="games"><i class="fas fa-gamepad"></i><span>All Games</span></a>
+    <a href="#" class="nav-item" data-page="unity"><i class="fas fa-cube"></i><span>Unity Games</span></a>
+    <a href="#" class="nav-item" data-page="anime"><i class="fas fa-tv"></i><span>Anime</span></a>
+    <a href="#" class="nav-item" data-page="movies"><i class="fas fa-film"></i><span>Movies & TV</span></a>
+
+    <a href="#" class="nav-item" data-page="cloak"><i class="fas fa-user-secret"></i><span>Stealth Tab</span></a>
+    <a href="#" class="nav-item" data-page="chat"><i class="fas fa-comments"></i><span>Global Chat</span></a>
+    <a href="#" class="nav-item" data-page="dms"><i class="fas fa-paper-plane"></i><span>DMs</span></a>
+  </nav>
+  <div class="sidebar-bottom">
+  </div>
+</aside>
+
+<!-- MAIN CONTENT -->
+<main class="main-content">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <button class="hamburger" id="hamburger"><i class="fas fa-bars"></i></button>
+    <div class="search-wrap">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="searchInput" class="search-input" placeholder="Search games..."/>
+      <kbd class="search-kbd">⌘K</kbd>
+    </div>
+    <div class="topbar-actions">
+      <div class="user-profile" id="userProfileBtn" style="display:none; align-items:center; gap:8px; font-weight:600; margin-right:8px; cursor:pointer; color:var(--text)">
+        <i class="fas fa-user-circle" style="color:var(--accent); font-size:1.2rem;"></i> <span></span>
+      </div>
+      <button class="btn-icon" id="topFriendsBtn" title="Friends"><i class="fas fa-user-friends"></i></button>
+      <button class="btn-icon" id="notifBtn" title="Notifications" style="margin-right: 8px;">
+        <i class="fas fa-bell"></i>
+        <span class="notif-badge" id="notifCount" style="display:none">0</span>
+      </button>
+      <button class="btn-primary" id="loginBtn" style="padding: 8px 16px; margin-right: 8px;">Login</button>
+      <button class="btn-ghost" id="logoutBtn" style="display:none; padding: 8px 16px; margin-right: 8px;">Logout</button>
+      <button class="btn-icon" id="panicBtn" title="Panic Key (Alt+X)"><i class="fas fa-exclamation-triangle"></i></button>
+      <button class="btn-icon" id="cloakBtn" title="Quick Cloak"><i class="fas fa-user-secret"></i></button>
+    </div>
+  </header>
+
+  <!-- PAGES -->
+  <div class="page active" id="page-home">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-content">
+        <div class="hero-badge"><span class="pulse-dot"></span>100+ Games Live</div>
+        <h1>Play Anything, <span class="gradient-text">Anywhere</span></h1>
+        <p>Unblocked games with stealth tabs and instant play. No downloads.</p>
+        <div class="hero-btns">
+          <button class="btn-primary" onclick="showPage('games')">Browse Games <i class="fas fa-arrow-right"></i></button>
+        </div>
+      </div>
+      <div class="hero-visual">
+        <div class="float-card c1"><i class="fas fa-gamepad"></i><span>100+ Games</span></div>
+        <div class="float-card c2"><i class="fas fa-bolt"></i><span>Instant Play</span></div>
+        <div class="float-card c3"><i class="fas fa-lock-open"></i><span>Unblocked</span></div>
+        <div class="hero-glow"></div>
+      </div>
+    </section>
+
+    <!-- CATEGORY FILTERS -->
+    <div class="section-header">
+      <h2>Browse by Category</h2>
+    </div>
+    <div class="cat-filters" id="catFilters">
+      <button class="cat-btn active" data-cat="all">🎮 All</button>
+      <button class="cat-btn" data-cat="action">⚔️ Action</button>
+      <button class="cat-btn" data-cat="puzzle">🧩 Puzzle</button>
+      <button class="cat-btn" data-cat="racing">🏎️ Racing</button>
+      <button class="cat-btn" data-cat="shooting">🔫 Shooting</button>
+      <button class="cat-btn" data-cat="multiplayer">👥 Multiplayer</button>
+      <button class="cat-btn" data-cat="unity">🎲 Unity</button>
+      <button class="cat-btn" data-cat="adventure">🗺️ Adventure</button>
+      <button class="cat-btn" data-cat="sports">⚽ Sports</button>
+      <button class="cat-btn" data-cat="strategy">♟️ Strategy</button>
+    </div>
+
+    <!-- FEATURED -->
+    <div class="section-header"><h2>⭐ Featured</h2></div>
+    <div class="game-grid featured-grid" id="featuredGrid"></div>
+
+    <!-- ALL GAMES -->
+    <div class="section-header"><h2>🎮 All Games</h2><span id="gameCount" class="game-count"></span></div>
+    <div class="game-grid" id="gameGrid"></div>
+  </div>
+
+  <!-- ALL GAMES PAGE -->
+  <div class="page" id="page-games">
+    <div class="section-header" style="margin-top:2rem"><h2>All Games</h2><span id="gameCount2" class="game-count"></span></div>
+    <div class="cat-filters" id="catFilters2"></div>
+    <div class="game-grid" id="gameGrid2"></div>
+  </div>
+
+  <!-- UNITY PAGE -->
+  <div class="page" id="page-unity">
+    <div class="section-header" style="margin-top:2rem"><h2>🎲 Unity WebGL Games</h2></div>
+    <p class="page-desc">Full Unity WebGL games running directly in your browser.</p>
+    <div class="game-grid" id="unityGrid"></div>
+  </div>
+
+  <!-- ANIME PAGE -->
+  <div class="page" id="page-anime">
+    <div class="section-header" style="margin-top:2rem"><h2><i class="fas fa-tv"></i> Anime</h2><span id="animeCount" class="game-count"></span></div>
+    <p class="page-desc">Click any title to start watching. Episodes, sub/dub, and alternate players are inside the player itself — no website navigation needed.</p>
+    <div class="game-grid" id="animeGrid"></div>
+  </div>
+
+  <!-- MOVIES & TV PAGE -->
+  <div class="page" id="page-movies">
+    <div class="section-header" style="margin-top:2rem"><h2><i class="fas fa-film"></i> Movies & TV</h2></div>
+    <p class="page-desc">Browse popular movies and shows. Click any poster to start watching — multiple alternate players inside.</p>
+
+    <div class="cat-filters" id="mediaTypeTabs">
+      <button class="cat-btn active" data-mtype="movie">🎬 Movies</button>
+      <button class="cat-btn" data-mtype="tv">📺 TV Shows</button>
+    </div>
+
+    <div class="search-wrap" style="margin: 14px 0; max-width: 560px;">
+      <i class="fas fa-search search-icon"></i>
+      <input type="text" id="mediaSearchInput" class="search-input" placeholder="Search movies or TV..." />
+    </div>
+
+    <div class="game-grid media-grid" id="mediaGrid"></div>
+
+    <div class="media-pager">
+      <button class="btn-ghost" id="mediaPrev"><i class="fas fa-arrow-left"></i> Previous</button>
+      <span id="mediaPageLabel">Page 1</span>
+      <button class="btn-ghost" id="mediaNext">Next <i class="fas fa-arrow-right"></i></button>
+    </div>
+  </div>
+
+
+
+  <!-- CLOAK PAGE -->
+  <div class="page" id="page-cloak">
+    <div class="cloak-page">
+      <div class="cloak-header">
+        <h2><i class="fas fa-user-secret"></i> Stealth Tab</h2>
+        <p>Disguise this tab as something else and set your emergency panic key.</p>
+      </div>
+      <div class="cloak-presets">
+        <button class="cloak-preset" data-title="Google Docs" data-icon="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico">
+          <img src="https://ssl.gstatic.com/docs/documents/images/kix-favicon7.ico" onerror="this.style.display='none'"/>
+          Google Docs
+        </button>
+        <button class="cloak-preset" data-title="Google Classroom" data-icon="https://ssl.gstatic.com/classroom/favicon.png">
+          <img src="https://ssl.gstatic.com/classroom/favicon.png" onerror="this.style.display='none'"/>
+          Google Classroom
+        </button>
+        <button class="cloak-preset" data-title="Khan Academy" data-icon="https://www.khanacademy.org/favicon.ico">
+          <img src="https://www.khanacademy.org/favicon.ico" onerror="this.style.display='none'"/>
+          Khan Academy
+        </button>
+        <button class="cloak-preset" data-title="Desmos Graphing Calculator" data-icon="https://www.desmos.com/assets/img/favicons/favicon-32x32.png">
+          <img src="https://www.desmos.com/assets/img/favicons/favicon-32x32.png" onerror="this.style.display='none'"/>
+          Desmos
+        </button>
+        <button class="cloak-preset" data-title="Wikipedia" data-icon="https://en.wikipedia.org/favicon.ico">
+          <img src="https://en.wikipedia.org/favicon.ico" onerror="this.style.display='none'"/>
+          Wikipedia
+        </button>
+        <button class="cloak-preset" data-title="Quizlet" data-icon="https://quizlet.com/favicon.ico">
+          <img src="https://quizlet.com/favicon.ico" onerror="this.style.display='none'"/>
+          Quizlet
+        </button>
+      </div>
+      <div class="cloak-custom">
+        <h3>Custom Cloak</h3>
+        <div class="cloak-form">
+          <div class="form-group">
+            <label>Tab Title</label>
+            <input type="text" id="cloakTitle" placeholder="e.g. Google Docs - Untitled"/>
+          </div>
+          <div class="form-group">
+            <label>Favicon URL</label>
+            <input type="text" id="cloakIcon" placeholder="https://example.com/favicon.ico"/>
+          </div>
+          <button class="btn-primary" id="applyCloakBtn">Apply Cloak</button>
+          <button class="btn-ghost" id="removeCloakBtn">Remove Cloak</button>
+        </div>
+      </div>
+      <div class="cloak-blank-wrap">
+        <h3>About:Blank Cloak</h3>
+        <p>Opens the site in a hidden about:blank tab — the URL bar shows nothing.</p>
+        <button class="btn-primary" id="blankCloakBtn"><i class="fas fa-ghost"></i> Open in About:Blank</button>
+      </div>
+
+      <div class="panic-settings">
+        <h3>Panic Key Settings</h3>
+        <p>Configure a key combination and a redirect URL for emergencies.</p>
+        <div class="cloak-form">
+          <div class="form-group">
+            <label>Panic Key (e.g. x, q, Escape)</label>
+            <div style="display:flex; gap:8px;">
+              <span class="search-kbd">Alt + </span>
+              <input type="text" id="panicKeyInput" placeholder="x" maxlength="1" style="width:60px; text-align:center;"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Panic Redirect URL</label>
+            <input type="text" id="panicUrlInput" placeholder="https://classroom.google.com"/>
+          </div>
+          <button class="btn-primary" id="savePanicBtn">Save Panic Settings</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SOCIAL HUB PAGE -->
+  <div class="page" id="page-dms">
+    <div class="social-hub">
+      <div class="social-sidebar">
+        <div class="social-section">
+          <div class="section-header-small">
+            <h3>Direct Messages</h3>
+            <button class="btn-icon-small" id="addFriendBtnDms"><i class="fas fa-user-plus"></i></button>
+          </div>
+          <div class="channel-list" id="dmListDms"></div>
+        </div>
+      </div>
+      <div class="social-main">
+        <div class="chat-header">
+          <div id="dmTitleWrap">
+            <h3 id="dmTitle">Messages</h3>
+            <p id="dmDesc">Select a friend to start chatting</p>
+          </div>
+          <div id="dmAddFriendTop" style="display:none; margin-top:10px;">
+            <button class="btn-primary btn-sm" id="addFriendBtnShortcut">Add Friend <i class="fas fa-user-plus"></i></button>
+          </div>
+        </div>
+        <div class="chat-messages" id="dmMessages">
+          <div class="chat-welcome">
+            <i class="fas fa-paper-plane" style="font-size: 3rem; opacity: 0.2; margin-bottom: 20px;"></i>
+            <h3>Your Messages</h3>
+            <p>Connect with friends and chat privately.</p>
+          </div>
+        </div>
+        <div class="chat-input-area">
+          <div class="reply-preview-bar" id="dmReplyBar"></div>
+          <form id="dmForm" class="chat-form" style="display:none">
+            <button type="button" class="chat-image-btn" id="dmImageBtn" title="Send image"><i class="fas fa-image"></i></button>
+            <input type="file" id="dmImageInput" accept="image/*" style="display:none" />
+            <input type="text" id="dmInput" placeholder="Type a message..." autocomplete="off" maxlength="500" />
+            <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i></button>
+          </form>
+          <div class="chat-login-prompt" id="dmLoginPrompt">
+            <p>You must be logged in to send messages.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NOTIFICATION MODAL -->
+  <div class="modal-overlay" id="notifModal">
+    <div class="auth-modal">
+      <div class="auth-header">
+        <h2><i class="fas fa-bell"></i> Notifications</h2>
+        <button class="close-btn" id="closeNotifModal">&times;</button>
+      </div>
+      <div id="notifList" class="channel-list" style="max-height: 400px; overflow-y: auto; padding: 10px;">
+        <p style="text-align:center; opacity:0.5; padding: 20px;">No new notifications</p>
+      </div>
+    </div>
+  </div>
+  <div class="page" id="page-chat">
+    <div class="social-page">
+      <div class="social-sidebar">
+        <div class="social-section">
+          <h3>Channels</h3>
+          <div class="channel-list" id="channelList">
+            <div class="channel-item active" data-id="global"><i class="fas fa-globe"></i> Global Chat</div>
+          </div>
+        </div>
+        
+        <div class="social-section">
+          <div class="section-header-small">
+            <h3>Custom Rooms</h3>
+            <div class="section-actions">
+              <button class="btn-icon-small" id="createRoomBtn" title="Create Room"><i class="fas fa-plus"></i></button>
+              <button class="btn-icon-small" id="joinRoomBtn" title="Join Room"><i class="fas fa-sign-in-alt"></i></button>
+            </div>
+          </div>
+          <div class="channel-list" id="roomList">
+            <!-- Custom rooms populate here -->
+          </div>
+        </div>
+
+
+        
+        <div class="social-section" id="pendingRequestsSection" style="display:none">
+          <h3>Pending Requests</h3>
+          <div class="channel-list" id="requestList"></div>
+        </div>
+      </div>
+
+      <div class="social-main">
+        <div class="chat-header" style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+          <div>
+            <h2 id="activeChatTitle"><i class="fas fa-globe"></i> Global Chat</h2>
+            <p id="activeChatDesc">Chat with other players on UBGPro in real-time!</p>
+          </div>
+          <div id="roomHeaderActions" class="room-header-actions" style="display:none;">
+            <span id="roomCodeBadge" class="search-kbd room-code-badge" title="Click to copy this code"></span>
+            <button class="room-header-icon-btn" id="leaveRoomBtn" title="Leave group"><i class="fas fa-sign-out-alt"></i></button>
+            <button class="room-header-icon-btn danger" id="deleteRoomBtn" title="Delete group" style="display:none;"><i class="fas fa-trash"></i></button>
+          </div>
+        </div>
+        <div class="chat-container">
+          <div class="chat-messages" id="chatMessages">
+            <!-- Messages load here -->
+          </div>
+          <div class="chat-input-area">
+            <div class="chat-login-prompt" id="chatLoginPrompt">
+              <p>You must be logged in to chat.</p>
+              <button class="btn-primary" id="openChatLoginBtn">Login / Sign Up</button>
+            </div>
+            <div class="reply-preview-bar" id="chatReplyBar"></div>
+            <form class="chat-form" id="chatForm" style="display:none">
+              <button type="button" class="chat-image-btn" id="chatImageBtn" title="Send image"><i class="fas fa-image"></i></button>
+              <input type="file" id="chatImageInput" accept="image/*" style="display:none" />
+              <input type="text" id="chatInput" placeholder="Type a message..." autocomplete="off" maxlength="500" />
+              <button type="submit" class="btn-primary"><i class="fas fa-paper-plane"></i></button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- MOVIES / TV PLAYER MODAL -->
+<div class="modal-overlay" id="mediaModalOverlay">
+  <div class="game-modal" id="mediaModal">
+    <div class="modal-header">
+      <div class="modal-info">
+        <h3 id="mediaModalTitle">Title</h3>
+        <span id="mediaModalMeta" class="modal-cat"></span>
+      </div>
+      <div class="modal-controls">
+        <button class="btn-icon" id="mediaFullscreenBtn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <button class="btn-icon" id="closeMediaModal" title="Close"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="anime-controls">
+      <div class="anime-control-row">
+        <span class="anime-control-label">Source</span>
+        <div class="anime-tabs" id="mediaSourceTabs"></div>
+      </div>
+      <div class="anime-control-row" id="mediaSeasonRow" style="display:none">
+        <span class="anime-control-label">Season</span>
+        <div class="anime-tabs" id="mediaSeasonTabs"></div>
+      </div>
+      <div class="anime-control-row" id="mediaEpisodeRow" style="display:none">
+        <span class="anime-control-label">Episode</span>
+        <div class="anime-eps" id="mediaEpisodeList"></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="mediaFrame" src="about:blank" allowfullscreen referrerpolicy="no-referrer"
+        allow="autoplay; fullscreen *; encrypted-media; picture-in-picture; accelerometer; gyroscope"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- ANIME PLAYER MODAL -->
+<div class="modal-overlay" id="animeModalOverlay">
+  <div class="game-modal" id="animeModal">
+    <div class="modal-header">
+      <div class="modal-info">
+        <h3 id="animeModalTitle">Anime</h3>
+        <span id="animeModalMeta" class="modal-cat"></span>
+      </div>
+      <div class="modal-controls">
+        <button class="btn-icon" id="animeFullscreenBtn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <button class="btn-icon" id="closeAnimeModal" title="Close"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="anime-controls">
+      <div class="anime-control-row">
+        <span class="anime-control-label">Player</span>
+        <div class="anime-tabs" id="animePlayerTabs"></div>
+      </div>
+      <div class="anime-control-row">
+        <span class="anime-control-label">Audio</span>
+        <div class="anime-tabs" id="animeSubDubTabs">
+          <button class="anime-tab active" data-mode="sub">SUB</button>
+          <button class="anime-tab" data-mode="dub">DUB</button>
+        </div>
+      </div>
+      <div class="anime-control-row">
+        <span class="anime-control-label">Episode</span>
+        <div class="anime-eps" id="animeEpsList"></div>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="animeFrame" src="about:blank" allowfullscreen referrerpolicy="no-referrer"
+        allow="autoplay; fullscreen *; encrypted-media; picture-in-picture; accelerometer; gyroscope"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- GAME MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="game-modal" id="gameModal">
+    <div class="modal-header">
+      <div class="modal-info">
+        <h3 id="modalTitle">Game Title</h3>
+        <span id="modalCat" class="modal-cat"></span>
+      </div>
+      <div class="modal-controls">
+        <button class="btn-icon" id="fullscreenBtn" title="Fullscreen"><i class="fas fa-expand"></i></button>
+        <button class="btn-icon" id="closeModal" title="Close"><i class="fas fa-times"></i></button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <iframe id="gameFrame" src="about:blank" allowfullscreen referrerpolicy="no-referrer" allow="autoplay; fullscreen *; geolocation; microphone; camera; midi; monetization; xr-spatial-tracking; gamepad; gyroscope; accelerometer; xr"></iframe>
+    </div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="auth-modal">
+    <div class="modal-header">
+      <h3 id="authTitle">Welcome Back</h3>
+      <button class="btn-icon" id="closeAuthModal" title="Close"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <form id="authForm" class="auth-form">
+        <div class="form-group">
+          <label>Username</label>
+          <input type="text" id="authUsername" placeholder="e.g. Gamer123" required />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="authPassword" placeholder="••••••••" required />
+        </div>
+        <button type="submit" class="btn-primary auth-submit" id="authSubmitBtn">Login <i class="fas fa-sign-in-alt"></i></button>
+        <a href="#" class="auth-toggle" id="authToggle">Need an account? <span>Sign Up</span></a>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- SOCIAL MODALS -->
+<div class="modal-overlay" id="friendModal">
+  <div class="auth-modal">
+    <div class="modal-header">
+      <h3>Add Friend</h3>
+      <button class="btn-icon" id="closeFriendModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label>Enter Username</label>
+        <input type="text" id="friendUsernameInput" placeholder="e.g. Gamer123" />
+      </div>
+      <button class="btn-primary auth-submit" id="sendFriendRequestBtn">Send Request</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="roomModal">
+  <div class="auth-modal">
+    <div class="modal-header">
+      <h3 id="roomModalTitle">Room</h3>
+      <button class="btn-icon" id="closeRoomModal"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group" id="roomNameGroup">
+        <label>Room Name</label>
+        <input type="text" id="roomNameInput" placeholder="e.g. My Secret Base" />
+      </div>
+      <div class="form-group" id="roomCodeGroup" style="display:none">
+        <label>Room Code</label>
+        <input type="text" id="roomCodeInput" placeholder="e.g. A7X9WQ" />
+      </div>
+      <button class="btn-primary auth-submit" id="roomActionBtn">Action</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- Custom Scripts -->
+<script src="js/firebase-config.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/chat.js"></script>
+<script src="js/games.js"></script>
+<script src="js/anime.js"></script>
+<script src="js/movies.js"></script>
+
+<script src="js/cloak.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
